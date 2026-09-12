@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:fitsSystemWindows="true">
+
+    <!--
+        Toolbar for the podcast details screen.
+        Includes the back navigation arrow and screen title.
+    -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/detailsToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        app:titleTextColor="@android:color/white" />
+
+    <!-- Podcast information and playback controls. -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Displays the selected podcast title. -->
+        <TextView
+            android:id="@+id/tvDetailsTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Podcast Title"
+            android:textSize="26sp"
+            android:textStyle="bold" />
+
+        <!-- Displays the podcast creator or publisher. -->
+        <TextView
+            android:id="@+id/tvDetailsArtist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Creator"
+            android:textSize="18sp" />
+
+        <!-- Displays the podcast genre. -->
+        <TextView
+            android:id="@+id/tvDetailsGenre"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="Genre"
+            android:textSize="16sp" />
+
+        <!-- Displays the RSS feed URL. -->
+        <TextView
+            android:id="@+id/tvDetailsFeed"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="Podcast Feed"
+            android:textSize="13sp" />
+
+        <!-- Allows the user to subscribe or unsubscribe. -->
+        <Button
+            android:id="@+id/btnSubscribe"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Subscribe" />
+
+        <!-- Heading for podcast episodes. -->
+        <TextView
+            android:id="@+id/tvEpisodesHeading"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Episodes"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <!--
+            Displays loading, playback, completion,
+            and error information for podcast episodes.
+        -->
+        <TextView
+            android:id="@+id/tvEpisodeStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="Loading episodes..."
+            android:textSize="14sp" />
+
+        <!-- Displayed while the RSS feed is loading. -->
+        <ProgressBar
+            android:id="@+id/episodeProgressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"
+            android:visibility="gone" />
+
+        <!--
+            Playback controls for the currently selected episode.
+            These buttons remain disabled until audio playback starts.
+        -->
+        <LinearLayout
+            android:id="@+id/playbackControls"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
+
+            <!-- Pauses or resumes the currently selected episode. -->
+            <Button
+                android:id="@+id/btnPauseResume"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:enabled="false"
+                android:text="Pause" />
+
+            <!-- Stops the currently selected episode. -->
+            <Button
+                android:id="@+id/btnStop"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:enabled="false"
+                android:text="Stop" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!--
+        Displays episodes retrieved from the podcast RSS feed.
+        RecyclerView handles scrolling for the episode list.
+    -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewEpisodes"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp" />
+
+</LinearLayout>

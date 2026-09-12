@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <!-- Displays the podcast title. -->
+    <TextView
+        android:id="@+id/tvPodcastName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Podcast Name"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <!-- Displays the podcast author or creator. -->
+    <TextView
+        android:id="@+id/tvArtistName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="Artist Name"
+        android:textSize="14sp" />
+
+    <!-- Displays the podcast genre. -->
+    <TextView
+        android:id="@+id/tvGenre"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="Genre"
+        android:textSize="13sp" />
+
+</LinearLayout>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <!-- Displays the episode title. -->
+    <TextView
+        android:id="@+id/tvEpisodeTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Episode Title"
+        android:textSize="17sp"
+        android:textStyle="bold" />
+
+    <!-- Displays the episode publication date. -->
+    <TextView
+        android:id="@+id/tvEpisodeDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="Publication Date"
+        android:textSize="13sp" />
+
+    <!-- Displays a short episode description. -->
+    <TextView
+        android:id="@+id/tvEpisodeDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:ellipsize="end"
+        android:maxLines="3"
+        android:text="Episode description"
+        android:textSize="14sp" />
+
+    <!-- Starts playback of the selected podcast episode. -->
+    <Button
+        android:id="@+id/btnPlayEpisode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Play Episode" />
+
+    <!-- Divider between episode rows. -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="12dp"
+        android:background="#DDDDDD" />
+
+</LinearLayout>
