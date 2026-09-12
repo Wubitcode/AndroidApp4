@@ -6,9 +6,9 @@ The project applies Android networking concepts explored in the PodPlay tutorial
 It connects to the iTunes Search API to find podcasts, retrieves podcast RSS feeds, 
 displays real episodes, supports subscriptions, and streams podcast audio.
 
-## Features
+#Features
 
-### Podcast Search
+# Podcast Search
 
 - Search the iTunes podcast directory
 - Retrieve live podcast data using Retrofit
@@ -16,7 +16,7 @@ displays real episodes, supports subscriptions, and streams podcast audio.
 - Display search results using RecyclerView
 - Show podcast title, creator, and genre
 
-### Advanced Search Filter
+# Advanced Search Filter
 
 SuperPodcast includes an additional search criterion
 that allows users to specify the minimum number of words required in a podcast title.
