@@ -1,18 +1,26 @@
 package com.wubitcode.androidapp4
 
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.wubitcode.androidapp4.model.Podcast
 import com.wubitcode.androidapp4.model.PodcastSearchResponse
 import com.wubitcode.androidapp4.network.RetrofitClient
 import com.wubitcode.androidapp4.ui.PodcastAdapter
+import com.wubitcode.androidapp4.ui.SubscriptionsActivity
+import com.wubitcode.androidapp4.worker.PodcastUpdateScheduler
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -22,40 +30,77 @@ import retrofit2.Response
  *
  * Users can:
  * - Search the iTunes podcast directory.
- * - Optionally filter results by the minimum number
- *   of words contained in the podcast title.
- * - Open a podcast to view details and episodes.
+ * - Apply an optional minimum-title-word filter.
+ * - Open podcast details.
+ * - Open the My Subscriptions screen.
+ * - Receive background update checks for subscribed podcasts.
  */
 class MainActivity : AppCompatActivity() {
 
     private lateinit var etSearch: EditText
     private lateinit var etMinimumWords: EditText
     private lateinit var btnSearch: Button
+    private lateinit var btnSubscriptions: Button
     private lateinit var progressBar: ProgressBar
     private lateinit var tvStatus: TextView
     private lateinit var recyclerViewPodcasts: RecyclerView
 
     private lateinit var podcastAdapter: PodcastAdapter
 
+    /**
+     * Handles the Android 13+ notification permission request.
+     *
+     * The app still works normally if the user declines.
+     * Notifications simply cannot be displayed until permission
+     * is granted through Android settings.
+     */
+    private val notificationPermissionLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted ->
+
+            if (isGranted) {
+
+                tvStatus.text =
+                    "Podcast update notifications are enabled."
+
+            } else {
+
+                tvStatus.text =
+                    "Notifications are disabled. Podcast search still works normally."
+            }
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContentView(R.layout.activity_main)
 
         // Connect Kotlin variables to the main screen views.
-        etSearch = findViewById(R.id.etSearch)
-        etMinimumWords = findViewById(R.id.etMinimumWords)
-        btnSearch = findViewById(R.id.btnSearch)
-        progressBar = findViewById(R.id.progressBar)
-        tvStatus = findViewById(R.id.tvStatus)
-        recyclerViewPodcasts = findViewById(R.id.recyclerViewPodcasts)
+        connectViews()
 
+        // Configure the podcast search results list.
         setupRecyclerView()
 
-        // Start the podcast search when the Search button is selected.
+        /*
+         * Schedule periodic background checks for newly
+         * published episodes from subscribed podcasts.
+         */
+        PodcastUpdateScheduler.schedule(this)
+
+        /*
+         * Android 13 and later require the user to approve
+         * notification permission at runtime.
+         */
+        requestNotificationPermissionIfNeeded()
+
+        // Start a podcast search when the Search button is selected.
         btnSearch.setOnClickListener {
 
             val searchTerm =
-                etSearch.text.toString().trim()
+                etSearch.text
+                    .toString()
+                    .trim()
 
             if (searchTerm.isEmpty()) {
 
@@ -67,8 +112,7 @@ class MainActivity : AppCompatActivity() {
 
             /*
              * The advanced filter is optional.
-             * If the user leaves it blank, no minimum-word
-             * restriction is applied.
+             * A blank or invalid value means no filter is applied.
              */
             val minimumWords =
                 etMinimumWords.text
@@ -81,10 +125,96 @@ class MainActivity : AppCompatActivity() {
                 minimumWords
             )
         }
+
+        /*
+         * Opens the My Subscriptions screen so users
+         * can view podcasts they have saved.
+         */
+        btnSubscriptions.setOnClickListener {
+
+            val intent =
+                Intent(
+                    this,
+                    SubscriptionsActivity::class.java
+                )
+
+            startActivity(intent)
+        }
     }
 
     /**
-     * Configures the RecyclerView used for podcast search results.
+     * Connects Activity properties to their XML views.
+     */
+    private fun connectViews() {
+
+        etSearch =
+            findViewById(
+                R.id.etSearch
+            )
+
+        etMinimumWords =
+            findViewById(
+                R.id.etMinimumWords
+            )
+
+        btnSearch =
+            findViewById(
+                R.id.btnSearch
+            )
+
+        btnSubscriptions =
+            findViewById(
+                R.id.btnSubscriptions
+            )
+
+        progressBar =
+            findViewById(
+                R.id.progressBar
+            )
+
+        tvStatus =
+            findViewById(
+                R.id.tvStatus
+            )
+
+        recyclerViewPodcasts =
+            findViewById(
+                R.id.recyclerViewPodcasts
+            )
+    }
+
+    /**
+     * Requests notification permission on Android 13
+     * and newer when it has not already been granted.
+     */
+    private fun requestNotificationPermissionIfNeeded() {
+
+        if (
+            Build.VERSION.SDK_INT >=
+            Build.VERSION_CODES.TIRAMISU
+        ) {
+
+            val permissionStatus =
+                ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                )
+
+            if (
+                permissionStatus !=
+                PackageManager.PERMISSION_GRANTED
+            ) {
+
+                notificationPermissionLauncher.launch(
+                    Manifest.permission.POST_NOTIFICATIONS
+                )
+            }
+        }
+    }
+
+    /**
+     * Configures the RecyclerView used to display
+     * podcast search results.
      */
     private fun setupRecyclerView() {
 
@@ -94,7 +224,9 @@ class MainActivity : AppCompatActivity() {
         recyclerViewPodcasts.apply {
 
             layoutManager =
-                LinearLayoutManager(this@MainActivity)
+                LinearLayoutManager(
+                    this@MainActivity
+                )
 
             adapter =
                 podcastAdapter
@@ -104,8 +236,8 @@ class MainActivity : AppCompatActivity() {
     /**
      * Sends a podcast search request to the iTunes Search API.
      *
-     * If a minimum word count is supplied, the returned podcasts
-     * are filtered before being displayed.
+     * If a minimum word count is supplied, the returned
+     * podcasts are filtered before being displayed.
      */
     private fun searchPodcasts(
         searchTerm: String,
@@ -120,7 +252,8 @@ class MainActivity : AppCompatActivity() {
         RetrofitClient.apiService
             .searchPodcasts(searchTerm)
             .enqueue(
-                object : Callback<PodcastSearchResponse> {
+                object :
+                    Callback<PodcastSearchResponse> {
 
                     override fun onResponse(
                         call: Call<PodcastSearchResponse>,
@@ -147,8 +280,8 @@ class MainActivity : AppCompatActivity() {
                                 .orEmpty()
 
                         /*
-                         * Apply the advanced title-word filter
-                         * only when the user enters a value.
+                         * Apply the optional minimum-title-word
+                         * filter before displaying results.
                          */
                         val filteredPodcasts =
                             applyMinimumWordFilter(
@@ -180,21 +313,18 @@ class MainActivity : AppCompatActivity() {
 
                         tvStatus.text =
                             "Network error: " +
-                                    (throwable.localizedMessage
-                                        ?: "Unknown error")
+                                    (
+                                            throwable.localizedMessage
+                                                ?: "Unknown error"
+                                            )
                     }
                 }
             )
     }
 
     /**
-     * Filters podcasts by the number of words in the title.
-     *
-     * Example:
-     * Minimum = 4
-     *
-     * "Cybersecurity Today" -> 2 words -> excluded
-     * "Inside the World of Cybersecurity" -> 5 words -> included
+     * Filters podcast results according to the minimum
+     * number of words required in the podcast title.
      */
     private fun applyMinimumWordFilter(
         podcasts: List<Podcast>,
@@ -205,6 +335,7 @@ class MainActivity : AppCompatActivity() {
             minimumWords == null ||
             minimumWords <= 1
         ) {
+
             return podcasts
         }
 
@@ -226,13 +357,14 @@ class MainActivity : AppCompatActivity() {
                         Regex("\\s+")
                     ).size
 
-                wordCount >= minimumWords
+                wordCount >=
+                        minimumWords
             }
         }
     }
 
     /**
-     * Displays useful information about the search and filter results.
+     * Displays useful search and filter result information.
      */
     private fun updateSearchStatus(
         originalCount: Int,
@@ -247,9 +379,12 @@ class MainActivity : AppCompatActivity() {
                     minimumWords != null &&
                     minimumWords > 1
                 ) {
+
                     "No podcasts matched the minimum " +
                             "$minimumWords-word title filter."
+
                 } else {
+
                     "No podcasts found."
                 }
 
@@ -261,16 +396,19 @@ class MainActivity : AppCompatActivity() {
                 minimumWords != null &&
                 minimumWords > 1
             ) {
+
                 "$displayedCount of $originalCount podcast(s) " +
                         "matched the minimum $minimumWords-word title filter."
+
             } else {
+
                 "$displayedCount podcast(s) found."
             }
     }
 
     /**
-     * Shows or hides the loading indicator while a network
-     * request is running.
+     * Shows or hides the loading indicator while
+     * a network request is running.
      */
     private fun showLoading(
         isLoading: Boolean
@@ -278,8 +416,11 @@ class MainActivity : AppCompatActivity() {
 
         progressBar.visibility =
             if (isLoading) {
+
                 View.VISIBLE
+
             } else {
+
                 View.GONE
             }
 

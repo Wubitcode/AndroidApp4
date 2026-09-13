@@ -1,9 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Allows SuperPodcast to connect to online podcast services. -->
-    <uses-permission android:name="android.permission.INTERNET" />
+    <!--
+        Allows SuperPodcast to search online podcast services,
+        retrieve RSS feeds, and stream podcast audio.
+    -->
+    <uses-permission
+        android:name="android.permission.INTERNET" />
+
+    <!--
+        Required on Android 13 and later so SuperPodcast
+        can notify users about podcast updates.
+    -->
+    <uses-permission
+        android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:allowBackup="true"
@@ -15,7 +28,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AndroidApp4">
 
-        <!-- Displays details for the podcast selected from search results. -->
+        <!--
+            Displays podcasts saved by the user
+            through the subscription feature.
+        -->
+        <activity
+            android:name=".ui.SubscriptionsActivity"
+            android:exported="false" />
+
+        <!--
+            Displays podcast information, RSS episodes,
+            subscriptions, and audio playback controls.
+        -->
         <activity
             android:name=".ui.PodcastDetailsActivity"
             android:exported="false" />
@@ -27,9 +51,13 @@
             android:windowSoftInputMode="adjustResize">
 
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action
+                    android:name="android.intent.action.MAIN" />
+
+                <category
+                    android:name="android.intent.category.LAUNCHER" />
+
             </intent-filter>
 
         </activity>

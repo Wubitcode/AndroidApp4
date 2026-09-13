@@ -42,14 +42,19 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.material)
 
-    // Displays podcast search results in a scrolling list.
+    // Displays podcast search results and episodes in scrolling lists.
     implementation("androidx.recyclerview:recyclerview:1.4.0")
 
-    // Handles HTTP requests to the iTunes podcast search service.
+    // Handles HTTP requests to the iTunes podcast search service
+    // and individual podcast RSS feeds.
     implementation("com.squareup.retrofit2:retrofit:3.0.0")
 
-    // Converts JSON responses from the API into Kotlin objects.
+    // Converts JSON responses from the iTunes API into Kotlin objects.
     implementation("com.squareup.retrofit2:converter-gson:3.0.0")
+
+    // Schedules reliable background tasks for checking
+    // subscribed podcasts for new episodes.
+    implementation("androidx.work:work-runtime-ktx:2.11.2")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
